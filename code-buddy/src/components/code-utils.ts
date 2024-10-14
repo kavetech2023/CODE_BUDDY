@@ -10,7 +10,6 @@ interface ExecutionResult {
   }
   
   export async function executeCode(code: string, language: string): Promise<ExecutionResult> {
-    // In a real-world scenario, this would be handled by a backend service
     return new Promise((resolve) => {
       setTimeout(() => {
         let output = '';
@@ -19,7 +18,9 @@ interface ExecutionResult {
         try {
           switch (language) {
             case 'javascript':
-              // Use a sandboxed environment to execute JavaScript
+            case 'react':
+            case 'nextjs':
+              // Use a sandboxed environment to execute JavaScript/React/Next.js
               const sandboxedFunction = new Function('console', `
                 let log = '';
                 const mockConsole = {
@@ -46,17 +47,16 @@ interface ExecutionResult {
         }
   
         resolve({ output, error });
-      }, 100); // Simulating a short delay
+      }, 100);
     });
   }
   
   export async function saveFile(name: string, content: string, language: string): Promise<void> {
-    // In a real application, you might want to save this to a backend or local storage
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${name}.${language}`;
+    a.download = `${name}.${getFileExtension(language)}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -67,7 +67,7 @@ interface ExecutionResult {
     return new Promise((resolve) => {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = '.html,.css,.js,.ts';
+      input.accept = '.html,.css,.js,.jsx,.ts,.tsx';
       input.onchange = (e: Event) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (file) {
@@ -96,45 +96,72 @@ interface ExecutionResult {
         return 'css';
       case 'js':
         return 'javascript';
+      case 'jsx':
+        return 'react';
       case 'ts':
-        return 'typescript';
+      case 'tsx':
+        return 'react'; // Assuming TypeScript React
       default:
         return 'javascript'; // Default to JavaScript if unknown
     }
   }
   
+  function getFileExtension(language: string): string {
+    switch (language) {
+      case 'html':
+        return 'html';
+      case 'css':
+        return 'css';
+      case 'javascript':
+        return 'js';
+      case 'react':
+        return 'jsx';
+      case 'nextjs':
+        return 'js';
+      default:
+        return 'txt';
+    }
+  }
+  
   export async function formatCode(code: string, language: string): Promise<string> {
     // In a real-world scenario, this would use a proper formatter like Prettier
-    // This is a very basic implementation for demonstration purposes
     return new Promise((resolve) => {
       setTimeout(() => {
-        let formattedCode = code;
-        switch (language) {
-          case 'javascript':
-          case 'html':
-          case 'css':
-            // Basic indentation for demonstration
-            formattedCode = code.split('\n').map(line => line.trim()).join('\n');
-            break;
-          default:
-            // For unsupported languages, return the original code
-            break;
-        }
-        resolve(formattedCode);
+        // This is a very basic formatter for demonstration purposes
+        const lines = code.split('\n');
+        let indentLevel = 0;
+        const formattedLines = lines.map(line => {
+          line = line.trim();
+          if (line.endsWith('{')) {
+            const formatted = '  '.repeat(indentLevel) + line;
+            indentLevel++;
+            return formatted;
+          } else if (line.startsWith('}')) {
+            indentLevel = Math.max(0, indentLevel - 1);
+            return '  '.repeat(indentLevel) + line;
+          } else {
+            return '  '.repeat(indentLevel) + line;
+          }
+        });
+        resolve(formattedLines.join('\n'));
       }, 100);
     });
   }
   
   export async function lintCode(code: string, language: string): Promise<string[]> {
     // In a real-world scenario, this would use a proper linter
-    // This is a very basic implementation for demonstration purposes
     return new Promise((resolve) => {
       setTimeout(() => {
         const warnings: string[] = [];
         switch (language) {
           case 'javascript':
+          case 'react':
+          case 'nextjs':
             if (code.includes('var ')) {
               warnings.push('Consider using "let" or "const" instead of "var".');
+            }
+            if (language === 'react' && !code.includes('import React')) {
+              warnings.push('React import is missing.');
             }
             break;
           case 'html':
@@ -146,9 +173,6 @@ interface ExecutionResult {
             if (code.includes('!important')) {
               warnings.push('Avoid using !important in CSS.');
             }
-            break;
-          default:
-            // For unsupported languages, return no warnings
             break;
         }
         resolve(warnings);
