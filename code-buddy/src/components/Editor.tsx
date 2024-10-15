@@ -35,7 +35,7 @@ export default function Editor() {
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [isSplitView, setIsSplitView] = useState(true)
   const [errors, setErrors] = useState<{ message: string; line: number; column: number }[]>([])
-  const previewRef = useRef(null)
+  const previewRef = useRef<HTMLIFrameElement | null>(null)
 
   const handleCodeChange = (value: string, tabId: number) => {
     setTabs(tabs.map(tab => 
@@ -195,7 +195,7 @@ export default function Editor() {
                       value={tab.content}
                       height="400px"
                       extensions={[
-                        languageOptions.find(lang => lang.value === tab.language)?.extension(),
+                        languageOptions.find(lang => lang.value === tab.language)?.extension() || [],
                         lintGutter(),
                         errorLinter
                       ]}
