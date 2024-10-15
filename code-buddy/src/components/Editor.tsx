@@ -66,7 +66,7 @@ export default function Editor() {
     const activeTabContent = tabs.find(tab => tab.id === activeTab)
     if (activeTabContent) {
       const result = await executeCode(activeTabContent.content, activeTabContent.language)
-      setOutput(result)
+      setOutput(result.output) // Assuming 'result' has an 'output' property that is a string
     }
   }
 
