@@ -30,20 +30,20 @@ export default function Editor() {
   ])
   const [activeTab, setActiveTab] = useState(1)
   const [output, setOutput] = useState('')
-  const [consoleOutput, setConsoleOutput] = useState([])
+  const [consoleOutput, setConsoleOutput] = useState<string[]>([])
   const [showPreview, setShowPreview] = useState(true)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [isSplitView, setIsSplitView] = useState(true)
-  const [errors, setErrors] = useState([])
+  const [errors, setErrors] = useState<{ message: string; line: number; column: number }[]>([])
   const previewRef = useRef(null)
 
-  const handleCodeChange = (value, tabId) => {
+  const handleCodeChange = (value: string, tabId: number) => {
     setTabs(tabs.map(tab => 
       tab.id === tabId ? { ...tab, content: value } : tab
     ))
   }
 
-  const handleLanguageChange = (value, tabId) => {
+  const handleLanguageChange = (value: string, tabId: number) => {
     setTabs(tabs.map(tab => 
       tab.id === tabId ? { ...tab, language: value } : tab
     ))
@@ -55,7 +55,7 @@ export default function Editor() {
     setActiveTab(newTab.id)
   }
 
-  const handleCloseTab = (tabId) => {
+  const handleCloseTab = (tabId: number) => {
     setTabs(tabs.filter(tab => tab.id !== tabId))
     if (activeTab === tabId) {
       setActiveTab(tabs[0].id)
@@ -127,7 +127,7 @@ export default function Editor() {
   }, [tabs])
 
   useEffect(() => {
-    const handleMessage = (event) => {
+    const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'console') {
         setConsoleOutput(prev => [...prev, event.data.content])
       } else if (event.data.type === 'error') {
