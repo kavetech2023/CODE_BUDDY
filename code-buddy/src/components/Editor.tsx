@@ -118,7 +118,7 @@ export default function Editor() {
           </body>
         </html>
       `
-      previewRef.current.srcdoc = previewContent
+      previewRef.current.setAttribute('srcdoc', previewContent)
     }
   }
 
@@ -195,7 +195,7 @@ export default function Editor() {
                       value={tab.content}
                       height="400px"
                       extensions={[
-                        languageOptions.find(lang => lang.value === tab.language).extension(),
+                        languageOptions.find(lang => lang.value === tab.language)?.extension(),
                         lintGutter(),
                         errorLinter
                       ]}
